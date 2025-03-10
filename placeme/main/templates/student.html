@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Student Dashboard</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Font Awesome for profile icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{% static 'admin_styles.css' %}">  <!-- Using Django static tag -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="theme-dark">
+
+    <div class="app-container">
+        <aside class="app-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="material-icons">menu</i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-button active" id="navPlacements" data-page="placementsPage">
+                    <i class="material-icons">assignment</i>
+                    <span class="nav-button-text">Placements</span>
+                </button>
+                <button class="nav-button" id="navNotifications" data-page="notificationsPage">
+                    <i class="material-icons">notifications</i>
+                    <span class="nav-button-text">Notifications</span>
+                </button>
+                <button class="nav-button" id="navLogout">
+                    <i class="material-icons">power_settings_new</i>
+                    <span class="nav-button-text">Log Out</span>
+                </button>
+            </nav>
+        </aside>
+
+        <main class="app-main-content">
+            <header class="app-header">
+                <div class="app-header-left">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userAvatar">S</div>
+                        <div class="user-info">
+                            <!-- Dynamically show logged in student's name -->
+                            <div class="user-name" id="userName">{{ user.firstname }} {{ user.lastname }}</div>
+                            <div class="user-role" id="userRole">Student</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="app-header-right">
+                    <button class="app-header-button" id="viewProfileButton" data-page="profilePage">
+                        <i class="material-icons">account_circle</i>
+                        <span>View Profile</span>
+                    </button>
+                    <button class="app-header-button" id="themeToggle">
+                        <i class="material-icons">brightness_4</i>
+                        <span>Toggle Theme</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Placements Page (Student - View Only) -->
+                <section id="placementsPage" class="page active-page">
+                    <h1 class="page-title">Available Placements</h1>
+                    <div class="filter-buttons">
+                        <button class="app-button filter-button active" data-filter="available">Available</button>
+                        <button class="app-button filter-button" data-filter="liked">Liked</button>
+                        <button class="app-button filter-button" data-filter="applied">Applied</button>
+                    </div>
+                    <ul class="placement-list" id="placementList">
+                        <!-- Placement items (read-only) -->
+                    </ul>
+                </section>
+
+                <!-- Notifications Page (Student) -->
+                <section id="notificationsPage" class="page">
+                    <h1 class="page-title">Notifications</h1>
+                    <ul class="notification-list" id="notificationList">
+                        <!-- Notification items -->
+                    </ul>
+                </section>
+
+                <!-- Student Profile Page -->
+                <section id="profilePage" class="page">
+                   <div class="profile-container">
+                        <div class="profile-header">
+                             <button class="app-button-icon back-button" id="backButton">
+                                <i class="material-icons">arrow_back</i>
+                            </button>
+                            <h2 class="profile-title">Profile</h2>
+                        </div>
+                        <div class="profile-details">
+                             <div class="profile-detail-item">
+                                <strong>Name:</strong> <span id="profileName"></span>
+                            </div>
+                            <div class="profile-detail-item">
+                                <strong>Email:</strong> <span id="profileEmail"></span>
+                            </div>
+                           <div class="profile-detail-item">
+                                <strong>CGPA:</strong> <span id="profileCGPA"></span>
+                            </div>
+                            <div class="profile-detail-item">
+                                <strong>Backlogs:</strong> <span id="profileBacklogs"></span>
+                            </div>
+                         </div>
+                    </div>
+                </section>
+                <!-- Details Page (Initially Hidden) -->
+                <section id="detailsPage" class="page">
+                    <h2 id="detailsPageTitle"></h2>
+                    <p id="detailsDescription"></p>
+                     <!-- Register button will be added dynamically -->
+                    <button id="detailsBackButton" class="app-button-icon">
+                        <i class="material-icons">arrow_back</i>
+                    </button>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="{% static 'student_script.js' %}"></script>
+    <script src="{% static 'common.js' %}"></script>
+</body>
+</html>

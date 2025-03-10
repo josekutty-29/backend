@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>signup.html</title>
+  <link rel="stylesheet" href="{% static 'signup.css' %}">
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placeme - Sign Up</title>
+    <link rel="stylesheet" href="{% static 'signup.css' %}">
+</head>
+<body>
+    <div class="signup-container">
+        <h2>Join Placeme</h2>
+        <p>Start exploring placement opportunities today.</p>
+        <form method="POST" action="{% url 'signup' %}">
+            {% csrf_token %}
+            <input type="text" name="firstname" placeholder="first Name" required>
+            <input type="text" name="lastname" placeholder="last Name" required>
+            <input type="text" name="regno" placeholder="Register Number (10 characters)" required>
+            <input type="email" name="email" placeholder="Email" required>
+        
+            <input type="password" name="password" placeholder="Password (6 or more characters)" required>
+            <p class="terms">
+                By clicking Sign Up, you agree to Placeme's 
+                <a href="#">User Agreement</a>, 
+                <a href="#">Privacy Policy</a>, 
+                <a href="#">Cookie Policy</a>.
+            </p>
+            <button type="submit" class="btn">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+    </div>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>

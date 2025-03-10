@@ -1,0 +1,59 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placeme Login</title>
+    <link rel="stylesheet" href="{% static 'login.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Side: Image Section -->
+        <div class="image-section">
+            <img src="https://i.ibb.co/xqB1DZg0/IMG-20250221-WA0000-1.jpg" alt="Placeme Login Illustration">
+        </div>
+
+        <!-- Right Side: Login Form -->
+        <div class="login-section">
+            <h2>Login</h2>
+            <form id="loginForm" method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <!-- Changed id and added name -->
+                    <input type="text" name="username" id="username" placeholder="Username/Email ID" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" id="password" placeholder="Password" required>
+                </div>
+                <div class="links">
+                    <a href="#">Forgot Password?</a>
+                    <a href="{% url 'signup' %}">New? Sign Up</a>
+                </div>
+                
+                <div class="button-container">
+                    <!-- Back Button Inside a Circle (Left Side) -->
+                    <div class="back-btn-container">
+                       
+                            <i class="fas fa-arrow-left"></i>
+                        
+                    </div>
+                
+                    <!-- Centered Login Button -->
+                    <div class="center">
+                        <button type="submit" class="btn">Login</button>
+                    </div>
+                </div>
+            </form>
+            <!-- If you need to include JavaScript, make sure static files are configured -->
+           
+        </div>
+    </div>
+</body>
+</html>
+
