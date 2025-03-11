@@ -1312,3 +1312,12 @@ body.theme-light {
         font-size: 12px;
     }
 }
+.placement-list .placement-list-item.registered {
+    background-color: #add8e6; /* Light blue */
+    color: black; /*ensures text is readable against light blue*/
+}
+
+.theme-dark .placement-list .placement-list-item.registered {
+    background-color: #2962ff; /* Darker blue in dark mode */
+    color: white; /*ensures text is readable against dark blue*/
+}

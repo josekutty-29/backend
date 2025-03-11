@@ -3,27 +3,19 @@
 // --- Data ---
 export const placements = [
     { id: 1, title: "Software Engineer Intern", description: "Join our team...", company: "Acme Corp", stipend: '10000', location: 'kochi', skillSet: 'full stack', contact: 'placement1@gmail.com' },
-    { id: 2, title: "Data Analyst", description: "Analyze data...", company: "Beta Solutions",  stipend: '15000', location: 'Banglore', skillSet: 'AI', contact: 'placement2@gmail.com' },
-    {id: 3,title: "Frontend Developer",description: "Develop and maintain user interfaces...",company: "Gamma Tech",},
-    {id: 4,title: "Backend Developer",description: "Build and maintain server-side logic...",company: "Delta Systems",},
-    {id: 5,title: "Full Stack Developer",description: "Work on both frontend and backend...",company: "Epsilon Innovations",},
-    {id: 6,title: "UI/UX Designer",description: "Design intuitive and engaging user interfaces...",company: "Zeta Designs",},
+    { id: 2, title: "Data Analyst", description: "Analyze data...", company: "Beta Solutions", stipend: '15000', location: 'Banglore', skillSet: 'AI', contact: 'placement2@gmail.com' },
+    { id: 3, title: "Frontend Developer", description: "Develop and maintain user interfaces...", company: "Gamma Tech" },
+    { id: 4, title: "Backend Developer", description: "Build and maintain server-side logic...", company: "Delta Systems" },
+    { id: 5, title: "Full Stack Developer", description: "Work on both frontend and backend...", company: "Epsilon Innovations" },
+    { id: 6, title: "UI/UX Designer", description: "Design intuitive and engaging user interfaces...", company: "Zeta Designs" },
 ];
 
-export const notifications = [ // Example - you might not need this for the tutor
+export const notifications = [
     { id: 1, title: "New Placement Added!" },
     { id: 2, title: "Deadline Approaching" },
     { id: 3, title: "Application Status Update" }
 ];
 
-export let studentData = {
-    likedPlacements: [],
-    appliedPlacements: [],
-    name: 'Student Name',
-    email: 'student@example.com',
-    cgpa: '8.5',
-    backlogs: '0'
-};
 
 
 // --- Theme Toggle ---
@@ -35,11 +27,10 @@ export function setupThemeToggle() {
             document.body.classList.remove('theme-dark');
             document.body.classList.add('theme-light');
         } else {
-            document.body.classList.add('theme-dark');  // Default to dark if no saved theme
+            document.body.classList.add('theme-dark');
             document.body.classList.remove('theme-light');
-            localStorage.setItem('theme', 'dark'); // Set default in localStorage
+            localStorage.setItem('theme', 'dark');
         }
-
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('theme-dark');
             document.body.classList.toggle('theme-light');
@@ -55,7 +46,6 @@ export function setupSidebarToggle() {
     if (sidebarToggle && sidebar) {
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('sidebar-collapsed');
-            // Add/remove 'sidebar-expanded' for persistent expanded state.
             sidebar.classList.toggle('sidebar-expanded', !sidebar.classList.contains('sidebar-collapsed'));
         });
     }
@@ -63,7 +53,7 @@ export function setupSidebarToggle() {
 
 // --- Navigation ---
 export function setupNavigation() {
-    document.querySelector('.sidebar-nav')?.addEventListener('click', (event) => { // Use optional chaining
+    document.querySelector('.sidebar-nav')?.addEventListener('click', (event) => {
         const target = event.target.closest('.nav-button');
         if (target) {
             const pageId = target.dataset.page;
@@ -73,13 +63,13 @@ export function setupNavigation() {
         }
     });
 
-     const backButton = document.getElementById('backButton'); //For profile page.
-        if(backButton){
-            backButton.addEventListener('click', () => {
-            activatePage('placementsPage'); // Go back to the placements page
+    const backButton = document.getElementById('backButton'); 
+    if (backButton) {
+        backButton.addEventListener('click', () => {
+            activatePage('placementsPage');
         });
     }
-     // View Profile button event listener
+
     const viewProfileButton = document.getElementById('viewProfileButton');
     if (viewProfileButton) {
         viewProfileButton.addEventListener('click', () => {
@@ -96,7 +86,6 @@ export function activatePage(pageId) {
     if (page) {
         page.classList.add('active-page');
     }
-
     document.querySelectorAll('.nav-button').forEach(button => {
         button.classList.remove('active');
     });
@@ -104,37 +93,33 @@ export function activatePage(pageId) {
     if (activeButton) {
         activeButton.classList.add('active');
     }
-
-    const appHeader = document.querySelector('.app-header'); // Get header for hiding
-     if (pageId === 'profilePage') {
-        if(appHeader) appHeader.classList.add('header-hidden');
+    const appHeader = document.querySelector('.app-header');
+    if (pageId === 'profilePage') {
+        if (appHeader) appHeader.classList.add('header-hidden');
     } else {
-        if(appHeader) appHeader.classList.remove('header-hidden');
+        if (appHeader) appHeader.classList.remove('header-hidden');
     }
 }
 
 // --- Placement Rendering (Shared) ---
 export function renderPlacements(placements, placementList, showActions = false) {
-  if(!placementList) return;
+    if (!placementList) return;
     placementList.innerHTML = '';
     placements.forEach(placement => {
         const listItem = document.createElement('li');
         listItem.classList.add('placement-list-item');
-        listItem.dataset.placementId = placement.id; // Store ID for later use
-
+        listItem.dataset.placementId = placement.id;
         let actionsHTML = '';
         if (showActions) {
-            //  actions for tutor
-        }
-        else{
-              const isLiked = studentData.likedPlacements.includes(placement.id);
-              actionsHTML = ` <div class="placement-actions">
+            // For tutor actions if needed
+        } else {
+            const isLiked = false; // You can update this if you have dynamic liked data
+            actionsHTML = `<div class="placement-actions">
                 <button class="like-button" data-placement-id="${placement.id}">
                     <i class="material-icons">${isLiked ? 'favorite' : 'favorite_border'}</i>
                 </button>
             </div>`;
         }
-
         listItem.innerHTML = `
             <div class="placement-info">
                 <i class="material-icons placement-icon">business_center</i>
@@ -144,27 +129,53 @@ export function renderPlacements(placements, placementList, showActions = false)
         `;
         placementList.appendChild(listItem);
     });
+
+    placementList.addEventListener('click', (event) => {
+        const likeButton = event.target.closest('.like-button');
+        const placementItem = event.target.closest('.placement-list-item');
+        if (likeButton) {
+            const placementId = parseInt(likeButton.dataset.placementId, 10);
+            toggleLike(placementId);
+        } else if (placementItem) {
+            const placementId = parseInt(placementItem.dataset.placementId, 10);
+            showPlacementDetails(placementId);
+        }
+    });
 }
 
-// --- Set User Info in Header (Shared) ---
-export function setUserInfo(name, role, avatarText) {
-    const userName = document.getElementById('userName');
-    const userRole = document.getElementById('userRole');
-    const userAvatar = document.getElementById('userAvatar');
-
-    if (userName) userName.textContent = name;
-    if (userRole) userRole.textContent = role;
-    if (userAvatar) userAvatar.textContent = avatarText;
+function toggleLike(placementId) {
+    // Implement toggle functionality as needed
+    renderPlacements(placements, document.getElementById('placementList'));
 }
-// --- Show Placement Details (Shared, from previous responses) ---
 
-export function showPlacementDetails(placementId, userRole = "student") { // Add userRole parameter
+// --- Notification Rendering ---
+export function renderNotifications() {
+    const notificationList = document.getElementById('notificationList');
+    if (!notificationList) {
+        console.error("notificationList element not found!");
+        return;
+    }
+    notificationList.innerHTML = '';
+    notifications.forEach(notification => {
+        const listItem = document.createElement('li');
+        listItem.classList.add('notification-list-item');
+        listItem.innerHTML = `
+            <div class="notification-info">
+                <i class="material-icons notification-icon">info</i>
+                <span class="notification-title">${notification.title}</span>
+            </div>
+        `;
+        notificationList.appendChild(listItem);
+    });
+}
+
+// --- Show Placement Details (Shared) ---
+export function showPlacementDetails(placementId, userRole = "student") {
     const placement = placements.find(p => p.id === placementId);
     if (!placement) {
         console.error("Placement not found:", placementId);
         return;
     }
-
     const detailsPage = document.getElementById('detailsPage');
     if (!detailsPage) {
         console.error("detailsPage element not found!");
@@ -172,50 +183,88 @@ export function showPlacementDetails(placementId, userRole = "student") { // Add
     }
     const detailsPageTitle = document.getElementById('detailsPageTitle');
     const detailsDescription = document.getElementById('detailsDescription');
-
     if (detailsPageTitle) detailsPageTitle.textContent = placement.title;
     if (detailsDescription) detailsDescription.textContent = placement.description;
-
-    // --- Conditional Button (Register for Student, Edit/Delete for Tutor) ---
+    
+    // Conditional button creation (if student)
     let actionButton = null;
     if (userRole === "student") {
         actionButton = document.createElement('button');
-        actionButton.textContent = studentData.appliedPlacements.includes(placementId) ? 'Registered' : 'Register';
+        actionButton.textContent = 'Register';
         actionButton.classList.add('app-button');
-        actionButton.disabled = studentData.appliedPlacements.includes(placementId);
         actionButton.dataset.placementId = placementId;
-
         actionButton.addEventListener('click', () => {
             handleRegistration(placementId);
         });
-    } else if (userRole === "tutor") {
-      //placeholder for tutor
     }
-
-    // --- Clear and Append Button ---
-    const existingButton = detailsPage.querySelector('.app-button'); // Or a more general selector
+    const existingButton = detailsPage.querySelector('.app-button');
     if (existingButton) {
         detailsPage.removeChild(existingButton);
     }
-      if (actionButton) { // Append only if a button was created
+    if (actionButton) {
         detailsPage.appendChild(actionButton);
     }
-
-
     activatePage('detailsPage');
 }
-// --- Handle Registration (Moved from student_script.js) ---
-function handleRegistration(placementId) {
-	console.log("handleRegistration called with placementId:", placementId);
-    if (!studentData.appliedPlacements.includes(placementId)) {
-        studentData.appliedPlacements.push(placementId);
-        // Update button state immediately:
-        const registerButton = document.querySelector(`#detailsPage [data-placement-id="${placementId}"]`);
-        if (registerButton) {
-            registerButton.textContent = 'Registered';
-            registerButton.disabled = true;
-        }
-			renderPlacements(placements, placementList); // Re-render placements after registration
-    }
 
+function handleRegistration(placementId) {
+    // Your registration logic here
+    console.log("handleRegistration called with placementId:", placementId);
 }
+
+// --- Initialization ---
+// Ensure we do not override header info so that the server-rendered user name remains intact.
+function initStudent() {
+    setupThemeToggle();
+    setupSidebarToggle();
+    setupNavigation();
+    setupFilterButtons();
+    setupDetailsBackButton();
+    activatePage('placementsPage');
+    renderPlacements(placements, document.getElementById('placementList'));
+    renderNotifications();
+    // DO NOT override header information here; let the Django template display the correct user data.
+}
+
+function setupFilterButtons() {
+    const filterButtons = document.querySelectorAll('.filter-button');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            currentFilter = button.dataset.filter;
+            renderPlacements(placements, document.getElementById('placementList'));
+            filterButtons.forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
+        });
+    });
+}
+
+function setupDetailsBackButton() {
+    const detailsBackButton = document.getElementById('detailsBackButton');
+    if (detailsBackButton) {
+        detailsBackButton.addEventListener('click', () => {
+            activatePage('placementsPage');
+        });
+    }
+}
+
+initStudent();
+function setTheme(themeName) {
+    localStorage.setItem('theme', themeName);
+    document.documentElement.className = themeName;
+}
+
+function toggleTheme() {
+    if (localStorage.getItem('theme') === 'theme-dark') {
+        setTheme('theme-light');
+    } else {
+        setTheme('theme-dark');
+    }
+}
+
+(function () {
+    if (localStorage.getItem('theme') === 'theme-dark') {
+        setTheme('theme-dark');
+    } else {
+        setTheme('theme-light');  // Default to light theme
+    }
+})();

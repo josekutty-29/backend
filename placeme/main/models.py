@@ -1,21 +1,48 @@
 from django.db import models
+from django.conf import settings
+from django.db import models
+from django.contrib.auth import get_user_model
 
-class User(models.Model):
-    email = models.CharField(unique=True,max_length=254, blank=True, null=True)
-    password = models.CharField(max_length=254, blank=True, null=True)
-    role = models.CharField(max_length=20,default='student')
-    firstname = models.CharField(max_length=20, blank=True, null=True)
-    lastname = models.CharField(max_length=20, blank=True, null=True)
-    regno = models.CharField(unique=True,max_length=20, blank=True, null=True)
-    last_login = models.DateTimeField(blank=True, null=True)
 
-    def is_authenticated(self):
-        # For this custom model, you might simply return True.
-        # Note: This is only a workaround and does not check if the user is truly authenticated.
-        return True
-    class Meta:
-        managed = True
-        db_table = 'user'
+
+
+
+from django.contrib.auth.models import AbstractUser
+
+
+
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class User(AbstractUser):
+    # Additional custom fields
+    regno = models.CharField(max_length=20, blank=True, null=True)
+    role = models.CharField(max_length=20, default='student')
+    
+    # Explicitly define the username field with a default value
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        blank=True,
+        default=""
+    )
+
+    def save(self, *args, **kwargs):
+        # If username is empty, set it to the email
+        if not self.username:
+            self.username = self.email
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.email
+
+
+
+
+
 
 class AuthGroup(models.Model):
     name = models.CharField(unique=True, max_length=150)
@@ -144,22 +171,24 @@ class Tutor(models.Model):
     def __str__(self):
         return self.tutor_name
 
+User = get_user_model()
+
 class Student(models.Model):
     """Student Table"""
 
-    reg_no = models.CharField(max_length=20, primary_key=True)  # Student Registration Number is the PK
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students')  # Foreign Key to User table
+    reg_no = models.CharField(max_length=20, primary_key=True)  # Student Registration Number as PK
+    # Change this field from ForeignKey to OneToOneField
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='student_profile')
     department = models.CharField(max_length=100)
-    semester = models.PositiveIntegerField()  # Assuming semester is a positive integer
-    date_of_birth = models.DateField(blank=True, null=True) # can be optional and null allowed
+    semester = models.PositiveIntegerField()
+    date_of_birth = models.DateField(blank=True, null=True)
     batch = models.CharField(max_length=20)
-    division = models.CharField(max_length=20,null=True)
-    phone_no = models.CharField(max_length=20, blank=True, null=True)  # Optional field, allow empty/Null
-    tutor = models.ForeignKey('Tutor', on_delete=models.SET_NULL, blank=True, null=True, related_name="students") #Set Null keeps the other things working if tutos is removed
+    division = models.CharField(max_length=20, null=True)
+    phone_no = models.CharField(max_length=20, blank=True, null=True)
+    tutor = models.ForeignKey('Tutor', on_delete=models.SET_NULL, blank=True, null=True, related_name="students")
 
     def __str__(self):
         return self.reg_no
-
 
 class Marks(models.Model):
     """Marks Table"""
