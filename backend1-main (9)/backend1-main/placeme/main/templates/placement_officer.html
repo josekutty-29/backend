@@ -1,0 +1,660 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Tutor Dashboard</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Font Awesome for profile icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" 
+          integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" 
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{% static 'admin_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'profile_styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Optional: Bootstrap Icons (if needed) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .table-container {
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        .table thead {
+            position: sticky;
+            top: 0;
+            background-color: #343a40;
+            color: white;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            display: block;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background: #f1f1f1;
+        }
+        .floating-action-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .a{
+            max-height:fit-content;
+        }
+        .form-select{
+            width:fit-content;
+        }
+        
+        
+        
+    </style>
+    <script>
+        
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.classList.add(savedTheme === 'light' ? 'theme-light' : 'theme-dark');
+        })();
+    </script>
+</head>
+<body class="theme-dark">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="app-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="material-icons">menu</i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-button active" id="navPlacements" data-page="placementsPage">
+                    <i class="material-icons">assignment</i>
+                    <span class="nav-button-text">Placements</span>
+                </button>
+                <button class="nav-button" id="navStudents" data-page="studentsPage">
+                    <i class="material-icons">people</i>
+                    <span class="nav-button-text">Students</span>
+                </button>
+                <form id="logoutForm" action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button class="nav-button" type="submit">
+                        <i class="material-icons">power_settings_new</i>
+                        <span class="nav-button-text">Log Out</span>
+                    </button>
+                </form>  
+            </nav>
+        </aside>
+        <!-- Main Content -->
+        <main class="app-main-content">
+            <header class="app-header">
+                <div class="app-header-left">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userAvatar">
+                            {% if user.first_name %}
+                                {{ user.first_name|slice:":1"|upper }}
+                            {% else %}
+                                T
+                            {% endif %}
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">
+                                {% if user.first_name or user.last_name %}
+                                    {{ user.first_name }} {{ user.last_name }}
+                                {% else %}
+                                    {{ user.email }}
+                                {% endif %}
+                            </div>
+                            <div class="user-role" id="userRole">Placement Officer</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="app-header-right">
+                    <button class="app-header-button" id="viewProfileButton" data-page="profilePage">
+                        <i class="material-icons">account_circle</i>
+                        <span><a href="{% url 'student_register' 2 %}">View Profile</a></span>
+                    </button>
+                    <button class="app-header-button" id="themeToggle">
+                        <i class="material-icons">brightness_4</i>
+                        <span>Toggle Theme</span>
+                    </button>
+                </div>
+            </header>
+            <div class="page-content">
+                <div class="student-actions">                          
+                    <button id="export-btn" class="btn btn-success mb-3">
+                        Export Applied Students' Marks
+                    </button>   
+                    <select id="students-dropdown" class="form-select col-5 mt-2" style="display: none;">
+                        <option value="">Select a Company</option>
+                        {% for placement in placements %}
+                            <option value="{% url 'export_applied_students_marks' placement.offer_id %}">{{ placement.company_name }}</option>
+                        {% endfor %}
+                    </select>                    
+                </div>
+                <!-- Placements Page (Tutor) -->
+                <section id="placementsPage" class="page">
+                    <h1 class="page-title">Placements</h1>
+                    <div class="row">
+                        {% for placement in placements %}
+                            <div class="col-md-4 mb-4 placement-card" 
+                                data-status="{% if user in placement.applied_by.all %}applied{% elif user in placement.liked_by.all %}liked{% else %}available{% endif %}">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-primary">{{ placement.company_name }}</h5>
+                                        <p class="card-text"><strong>CGPA Required:</strong> {{ placement.cgpa_required }}</p>
+                                        <p class="card-text"><strong>Allowed Backpapers:</strong> {{ placement.no_of_backpapers }}</p>
+                                        <p class="card-text"><strong>Salary:</strong> ₹{{ placement.salary }} per annum</p>
+                                        <p class="card-text"><strong>Skills Required:</strong> {{ placement.skillset|default:"N/A" }}</p>
+                                        <p class="card-text"><strong>Apply Before:</strong> {{ placement.final_date }}</p>
+                                        <div class="d-flex flex-row justify-content-evenly">
+                                            <a href="{% url 'placement_delete' offer_id=placement.offer_id %}" class="btn btn-primary text-decoration-none">Remove</a>
+                                        <a href="{% url 'placement_update' offer_id=placement.offer_id %}" class="btn btn-primary text-decoration-none">Edit</a>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info">No placement offers available at the moment.</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                
+                    <!-- Floating Action Bar -->
+                    <div class="floating-action-bar">
+                        <a href="{% url 'placement_create'  %}" class="app-button">Create New Placement</a>
+                    </div>
+                </section>
+                
+                <!-- Students Page (For Tutor) -->
+                <section id="studentsPage" class="page active-page">
+                    <div class="container mt-4">
+                        <!-- Liked Users Table -->
+                        <div class="card shadow mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Students Who Liked Your Offers</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Filtering and sorting controls -->
+                                <form method="GET" class="mb-3">
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" name="liked_filter" 
+                                                   value="{{ liked_filter }}" placeholder="Filter users...">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-select" name="liked_sort">
+                                                <option value="">Sort by...</option>
+                                                <option value="name" {% if liked_sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                                                <option value="-name" {% if liked_sort == '-name' %}selected{% endif %}>Name (Z-A)</option>
+                                                <option value="email" {% if liked_sort == 'email' %}selected{% endif %}>Email (A-Z)</option>
+                                                <option value="-email" {% if liked_sort == '-email' %}selected{% endif %}>Email (Z-A)</option>
+                                                <option value="regno" {% if liked_sort == 'regno' %}selected{% endif %}>Registration No. (Asc)</option>
+                                                <option value="-regno" {% if liked_sort == '-regno' %}selected{% endif %}>Registration No. (Desc)</option>
+                                            </select>
+                                        </div>
+                                        <!-- Preserve any applied filters when submitting -->
+                                        <input type="hidden" name="applied_filter" value="{{ applied_filter }}">
+                                        <input type="hidden" name="applied_sort" value="{{ applied_sort }}">
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-outline-primary">Apply Filters</button>
+                                            <a href="{% url 'placement_officer' %}" class="btn btn-outline-secondary">Clear</a>
+                                        </div>
+                                    </div>
+                                </form>
+                                
+                                <!-- Table for liked users -->
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Registration No.</th>
+                                                <th>Department</th>
+                                                <th>Semester</th>
+                                                <th>Liked Company</th>
+                                                <th>Salary</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if liked %}
+                                                {% for user, placements in liked.items %}
+                                                    {% for placement in placements %}
+                                                        <tr>
+                                                            <td>{{ user.get_full_name|default:user.username }}</td>
+                                                            <td>{{ user.email }}</td>
+                                                            <td>{% if user.regno %}{{ user.regno }}{% else %}-{% endif %}</td>
+                                                            <td>{% if user.student_profile %}{{ user.student_profile.department }}{% else %}-{% endif %}</td>
+                                                            <td>{% if user.student_profile %}{{ user.student_profile.semester }}{% else %}-{% endif %}</td>
+                                                            <td>{{ placement.company_name }}</td>
+                                                            <td>{{ placement.salary }}</td>
+                                                            <td>
+                                                                <a href="{% url 'student_profile' user.id %}" class="btn btn-sm btn-outline-primary">
+                                                                    View Profile
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="8" class="text-center text-muted">No users have liked your placement offers yet.</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>                                                                     
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Applied Users Table -->
+                        <div class="card shadow mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Students Who Applied to Your Offers</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Filtering and sorting controls -->
+                                <form method="GET" class="mb-3">
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" name="applied_filter" 
+                                                   value="{{ applied_filter }}" placeholder="Filter users...">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-select" name="applied_sort">
+                                                <option value="">Sort by...</option>
+                                                <option value="name" {% if applied_sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                                                <option value="-name" {% if applied_sort == '-name' %}selected{% endif %}>Name (Z-A)</option>
+                                                <option value="email" {% if applied_sort == 'email' %}selected{% endif %}>Email (A-Z)</option>
+                                                <option value="-email" {% if applied_sort == '-email' %}selected{% endif %}>Email (Z-A)</option>
+                                                <option value="regno" {% if applied_sort == 'regno' %}selected{% endif %}>Registration No. (Asc)</option>
+                                                <option value="-regno" {% if applied_sort == '-regno' %}selected{% endif %}>Registration No. (Desc)</option>
+                                            </select>
+                                        </div>
+                                        <!-- Preserve any liked filters when submitting -->
+                                        <input type="hidden" name="liked_filter" value="{{ liked_filter }}">
+                                        <input type="hidden" name="liked_sort" value="{{ liked_sort }}">
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-outline-success">Apply Filters</button>
+                                            <a href="{% url 'placement_officer' %}" class="btn btn-outline-secondary">Clear</a>
+                                        </div>
+                                    </div>
+                                </form>
+                                
+                                <!-- Table for applied users -->
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Registration No.</th>
+                                                <th>Department</th>
+                                                <th>Semester</th>
+                                                <th>Applied Company</th>
+                                                <th>Salary</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if applied %}
+                                            {% for user, placements in applied.items %}
+                                                {% for placement in placements %}
+                                                    <tr>
+                                                        <td>{{ user.get_full_name|default:user.username }}</td>
+                                                        <td>{{ user.email }}</td>
+                                                        <td>{% if user.regno %}{{ user.regno }}{% else %}-{% endif %}</td>
+                                                        <td>{% if user.student_profile %}{{ user.student_profile.department }}{% else %}-{% endif %}</td>
+                                                        <td>{% if user.student_profile %}{{ user.student_profile.semester }}{% else %}-{% endif %}</td>
+                                                        <td>{{ placement.company_name }}</td>
+                                                        <td>{{ placement.salary }}</td>
+                                                        <td>
+                                                            <div class="d-flex flex-direction-row">
+                                                                <a href="{% url 'student_profile' user.id %}" class="btn btn-sm btn-outline-primary m-2">
+                                                                    View Profile
+                                                                </a>
+                                                                
+                                                                {% if user in placement.accepted.all %}
+                                                                
+                                                                    <!-- If the student has already applied, show "Accepted" button -->
+                                                                    <button href="" class="btn btn-sm btn-outline-success m-2" disabled>
+                                                                        Accepted
+                                                                    </button>
+                                                                {% else %}
+                                                                    <a href="{% url 'remove_applied' offer_id=placement.offer_id user_id=user.id %}" 
+                                                                        class="btn btn-sm btn-outline-danger m-2">
+                                                                        Remove
+                                                                    </a>
+                                                                    <!-- If the student hasn't applied, show the "Accept" button -->
+                                                                    <a href="{% url 'accept_applied' offer_id=placement.offer_id user_id=user.id %}" 
+                                                                        class="btn btn-sm btn-outline-primary m-2">
+                                                                        Accept
+                                                                    </a>
+                                                                {% endif %}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            {% endfor %}
+                                            {% else %}
+                                            <tr>
+                                                <td colspan="8" class="text-center text-muted">No users have applied to your placement offers yet.</td>
+                                            </tr>
+                                            {% endif %}
+
+                                        </tbody>
+                                    </table>                                    
+                                    <script>
+                                        document.addEventListener("DOMContentLoaded", function () {
+                                            document.querySelectorAll(".remove-btn").forEach(button => {
+                                                button.addEventListener("click", function () {
+                                                    let offerId = this.getAttribute("data-offer-id");
+                                                    let userId = this.getAttribute("data-user-id");
+                                                    let row = document.getElementById(`row-${offerId}-${userId}`);
+                                    
+                                                    fetch(`/apply-placement/${offerId}/`, {
+                                                        method: "POST",
+                                                        headers: {
+                                                            "X-CSRFToken": "{{ csrf_token }}",
+                                                            "Content-Type": "application/json",
+                                                        },
+                                                        body: JSON.stringify({})
+                                                    })
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        if (data.applied === false) {
+                                                            row.remove();
+                                                        }
+                                                    })
+                                                    .catch(error => console.error("Error:", error));
+                                                });
+                                            });
+                                        });
+                                    </script>                                                                     
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Tutor Profile Page -->
+                <section id="profilePage" class="page">
+                    <div class="profile-container">
+                        <div class="profile-header">
+                            <button class="app-button-icon back-button" id="backButton">
+                                <i class="material-icons">arrow_back</i>
+                            </button>
+                            <h2 class="profile-title">Profile</h2>
+                        </div>
+                        <div class="profile-details">
+                            <div class="profile-detail-item">
+                                <strong>Name:</strong> <span id="profileName">
+                                    {% if user.first_name or user.last_name %}
+                                        {{ user.first_name }} {{ user.last_name }}
+                                    {% else %}
+                                        {{ user.email }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="profile-detail-item">
+                                <strong>Email:</strong> <span id="profileEmail">{{ user.email }}</span>
+                            </div>
+                            <!-- Tutor-Specific Details -->
+                            <div id="tutorDetails">
+                                <div class="profile-detail-item">
+                                    <strong>Semester:</strong> <span id="profileSemester">
+                                        {% if user.semester %}{{ user.semester }}{% else %}N/A{% endif %}
+                                    </span>
+                                </div>
+                                <div class="profile-detail-item">
+                                    <strong>Division:</strong> <span id="profileDivision">
+                                        {% if user.division %}{{ user.division }}{% else %}N/A{% endif %}
+                                    </span>
+                                </div>
+                                <div class="profile-detail-item">
+                                    <strong>No. of Students:</strong> <span id="profileNumStudents">
+                                        {% if user.num_students %}{{ user.num_students }}{% else %}N/A{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            {% if messages %}
+                <div id="toast-container">
+                    {% for message in messages %}
+                        <div class="toast-message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <style>
+                #toast-container {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 1000;
+                }
+
+                .toast-message {
+                    background: #333;
+                    color: white;
+                    padding: 10px 15px;
+                    margin-bottom: 10px;
+                    border-radius: 5px;
+                    opacity: 1;
+                    transition: opacity 0.5s ease-in-out;
+                }
+            </style>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    console.log("DOM Loaded");
+                    document.getElementById("export-btn").addEventListener("click", function() {
+                        let dropdown = document.getElementById("students-dropdown");
+                        
+                    
+                        this.style.display = "none"; // Hide button
+                        dropdown.style.display = "block"; // Show dropdown
+                        dropdown.focus(); // Auto-focus on dropdown
+                    });
+                    
+                    // Hide dropdown and show button again when an option is selected
+                    document.getElementById("students-dropdown").addEventListener("change", function() {
+                        if (this.value) {
+                            this.style.display = "none"; // Hide dropdown
+                            window.location.href = this.value; // Redirect to selected company page
+                            document.getElementById("export-btn").style.display = "block"; // Show button again
+                        }
+                    });
+                    
+                    // Hide dropdown if user clicks anywhere else on the page
+                    document.addEventListener("click", function(event) {
+                        let dropdown = document.getElementById("students-dropdown");
+                        let button = document.getElementById("export-btn");
+                    
+                        if (dropdown.style.display === "block" && event.target !== dropdown && event.target !== button) {
+                            dropdown.style.display = "none"; // Hide dropdown
+                            button.style.display = "block"; // Show button again
+                        }
+                    });
+            
+                    // Theme Toggle
+                    const themeToggle = document.getElementById('themeToggle');
+                    if (themeToggle) {
+                        const savedTheme = localStorage.getItem('theme') || 'dark';
+                        document.body.classList.add(savedTheme === 'light' ? 'theme-light' : 'theme-dark');
+            
+                        themeToggle.addEventListener('click', () => {
+                            document.body.classList.toggle('theme-dark');
+                            document.body.classList.toggle('theme-light');
+                            localStorage.setItem('theme', document.body.classList.contains('theme-light') ? 'light' : 'dark');
+                        });
+                    }
+            
+                    // Toast Message Auto-hide
+                    document.querySelectorAll(".toast-message").forEach((toast, index) => {
+                        setTimeout(() => {
+                            toast.style.opacity = "0";
+                            setTimeout(() => toast.remove(), 500);
+                        }, 5000 + index * 100);
+                    });
+            
+                    // Sidebar Navigation
+                    const navButtons = document.querySelectorAll(".nav-button");
+                    const pages = document.querySelectorAll(".page");
+            
+                    navButtons.forEach(button => {
+                        button.addEventListener("click", function () {
+                            const targetPageId = this.getAttribute("data-page");
+                            pages.forEach(page => page.classList.remove("active-page"));
+                            document.getElementById(targetPageId).classList.add("active-page");
+            
+                            navButtons.forEach(btn => btn.classList.remove("active"));
+                            this.classList.add("active");
+                        });
+                    });
+            
+                    // Sort & Filter Dropdowns
+                    function setupDropdown(triggerId, dropdownId) {
+                        const trigger = document.getElementById(triggerId);
+                        const dropdown = document.getElementById(dropdownId);
+            
+                        if (trigger && dropdown) {
+                            trigger.addEventListener("click", function () {
+                                dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+                            });
+            
+                            document.addEventListener("click", function (event) {
+                                if (!trigger.contains(event.target) && !dropdown.contains(event.target)) {
+                                    dropdown.style.display = "none";
+                                }
+                            });
+                        }
+                    }
+            
+                    setupDropdown("sortStudents", "sortDropdown");
+                    setupDropdown("filterStudents", "filterDropdown");
+                    const sortButtons = document.querySelectorAll("#sortDropdown .dropdown-item");
+                    const filterButtons = document.querySelectorAll("#filterDropdown .dropdown-item");
+                
+                    // Get current URL params
+                    const urlParams = new URLSearchParams(window.location.search);
+                
+                    // Handle sorting
+                    sortButtons.forEach(button => {
+                        button.addEventListener("click", function () {
+                            const sortValue = this.getAttribute("data-sort");
+                
+                            // Update URL parameters
+                            urlParams.set("sort", sortValue);
+                            window.location.search = urlParams.toString();
+                        });
+                    });
+                
+                    // Handle filtering
+                    filterButtons.forEach(button => {
+                        button.addEventListener("click", function () {
+                            const filterValue = this.getAttribute("data-filter").replace("semester_", "");
+                
+                            // Update URL parameters
+                            urlParams.set("sem", filterValue);
+                            window.location.search = urlParams.toString();
+                        });
+                    });
+                
+                    // Toggle dropdowns
+                    document.getElementById("sortStudents").addEventListener("click", function () {
+                        document.getElementById("sortDropdown").classList.toggle("show");
+                    });
+                
+                    document.getElementById("filterStudents").addEventListener("click", function () {
+                        document.getElementById("filterDropdown").classList.toggle("show");
+                    });
+                
+                    // Close dropdowns if clicked outside
+                    document.addEventListener("click", function (event) {
+                        if (!event.target.closest(".student-filters")) {
+                            document.getElementById("sortDropdown").classList.remove("show");
+                            document.getElementById("filterDropdown").classList.remove("show");
+                        }
+                    });
+                    const clearFilterButton = document.getElementById("clearFilter");
+                    filterButtons.forEach(button => {
+                        button.addEventListener("click", function () {
+                            const filterValue = this.getAttribute("data-filter").replace("semester_", "");
+                
+                            // Update URL parameters
+                            if (filterValue) {
+                                urlParams.set("sem", filterValue);
+                            }
+                            window.location.search = urlParams.toString();
+                        });
+                    });
+                
+                    // Handle clearing the filter
+                    clearFilterButton.addEventListener("click", function () {
+                        urlParams.delete("sem");  // Remove semester filter
+                        window.location.search = urlParams.toString();
+                    });
+                });
+                function sortTable(tableId, columnIndex) {
+                    let table = document.getElementById(tableId).querySelector("tbody");
+                    let rows = Array.from(table.querySelectorAll("tr"));
+                    
+                    rows.sort((a, b) => {
+                        let aValue = a.children[columnIndex].innerText.toLowerCase();
+                        let bValue = b.children[columnIndex].innerText.toLowerCase();
+                        return aValue.localeCompare(bValue);
+                    });
+                    
+                    rows.forEach(row => table.appendChild(row));
+                }
+        
+                document.getElementById("sortLiked").addEventListener("change", function() {
+                    let sortOption = this.value;
+                    let columnIndex = sortOption === "name" ? 1 : sortOption === "reg_no" ? 0 : 2;
+                    sortTable("likedTable", columnIndex);
+                });
+        
+                document.getElementById("sortApplied").addEventListener("change", function() {
+                    let sortOption = this.value;
+                    let columnIndex = sortOption === "name" ? 1 : sortOption === "reg_no" ? 0 : 2;
+                    sortTable("appliedTable", columnIndex);
+                });
+            </script>                     
+        </main>
+    </div>
+    <!-- <script type="module" src="{% static 'tutor_script.js' %}"></script> -->
+    <!-- <script src="{% static 'common.js' %}"></script> -->
+</body>
+</html>

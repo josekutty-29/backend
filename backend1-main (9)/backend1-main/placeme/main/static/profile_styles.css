@@ -1,0 +1,302 @@
+/* css/profile_styles.css */
+
+/*  Root Variables (Important for Theme Consistency) */
+:root {
+    /*  Dark Theme Variables */
+    --dark-bg-primary: #121212;  /*  Dark background */
+    --dark-bg-secondary: #1E1E1E; /*  Slightly lighter dark background */
+    --dark-text-primary: #FFFFFF;  /*  White text */
+    --dark-text-secondary: #B0B0B0; /*  Grayish text */
+    --dark-accent-primary: #03DAC5; /*  Teal/Cyan accent color */
+    --dark-accent-secondary: #BB86FC; /*  Purple accent color */
+    --dark-gray-500: #6B7280; /*  Medium Gray */
+    --dark-glass-blur: blur(10px);
+    --dark-glass-border: 1px solid rgba(255, 255, 255, 0.1);
+
+    /*  Light Theme Variables */
+    --light-bg-primary: #FFFFFF; /*  White background */
+    --light-bg-secondary: #F5F5F5; /*  Light gray background */
+    --light-text-primary: #000000; /*  Black text */
+    --light-text-secondary: #555555; /*  Darker gray text */
+    --light-accent-primary: #6200EE; /*  Darker Purple accent */
+    --light-accent-secondary: #3700B3; /*  Even darker purple */
+    --light-gray-500: #9CA3AF; /*  Medium Gray */
+    --light-glass-blur: blur(8px);
+    --light-glass-border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* --- General Body Styling (Optional, but helps consistency) --- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /*  Modern sans-serif */
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- Profile Container --- */
+.profile-container {
+    margin: 20px auto;  /*  Add top/bottom margin */
+    padding: 24px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /*  Subtle shadow */
+    max-width: 800px; /*  Maximum width for larger screens */
+    width: 95%; /* Take up most of the screen */
+}
+
+/* Glassmorphic Overlay */
+.profile-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    z-index: -1;
+}
+
+.theme-dark .profile-container::before {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+}
+
+.theme-light .profile-container::before {
+    background-color: rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(5px);
+}
+
+.theme-dark .profile-container {
+    background: rgba(45, 64, 89, 0.7);
+    backdrop-filter: var(--dark-glass-blur);
+    border: var(--dark-glass-border);
+    color: var(--dark-text-primary);
+}
+
+.theme-light .profile-container {
+    background: var(--light-bg-secondary);
+    backdrop-filter: var(--light-glass-blur);
+    border: var(--light-glass-border);
+    color: var(--light-text-primary);
+}
+
+
+/* --- Profile Header --- */
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1); /*  Subtle divider */
+}
+
+.profile-title {
+    font-size: 28px; /*  Larger title */
+    font-weight: 700; /*  Bolder weight */
+    margin-left: 15px; /* Space from the back button */
+}
+
+.theme-dark .profile-title {
+    color: var(--dark-text-primary);
+}
+
+.theme-light .profile-title {
+    color: var(--light-text-primary);
+}
+
+/* Back Button */
+.back-button {
+    background-color: transparent;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.theme-dark .back-button {
+    color: var(--dark-gray-500);
+}
+
+.theme-light .back-button {
+    color: var(--light-gray-500);
+}
+
+.theme-dark .back-button:hover {
+    color: var(--dark-accent-primary);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-light .back-button:hover {
+    color: var(--light-accent-primary);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* --- Tabs --- */
+.profile-tabs {
+    display: flex;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1); /*  Tab underline */
+    margin-bottom: 20px;
+}
+
+.profile-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    background: none;
+    color: var(--light-text-secondary); /* Default text color */
+    transition: color 0.2s ease, border-bottom 0.2s ease; /* Smooth transition */
+}
+
+.theme-dark .profile-tab {
+    color: var(--dark-text-secondary);
+}
+
+.theme-light .profile-tab {
+    color: var(--light-text-secondary);
+}
+
+.profile-tab.active {
+    /*  Active Tab Styling */
+    border-bottom: 3px solid var(--light-accent-primary); /* Underline for active tab */
+    color: var(--light-text-primary);
+    font-weight: 600;
+}
+
+.theme-dark .profile-tab.active {
+    border-bottom: 3px solid var(--dark-accent-primary);
+    color: var(--dark-text-primary);
+}
+
+.theme-light .profile-tab.active {
+    border-bottom: 3px solid var(--light-accent-primary);
+    color: var(--light-text-primary);
+}
+
+.profile-tab:hover {
+    /* Hover Effect */
+    color: var(--light-accent-primary); /* Change color on hover */
+}
+
+.theme-dark .profile-tab:hover {
+    color: var(--dark-accent-primary);
+}
+
+.theme-light .profile-tab:hover {
+    color: var(--light-accent-primary);
+}
+
+
+/* --- Tab Content --- */
+.tab-content {
+    display: none; /* Initially hide all tab content */
+}
+
+.tab-content.active {
+    display: block; /* Show the active tab content */
+}
+
+/* --- Profile Details --- */
+.profile-details {
+    margin-top: 10px;
+}
+
+.profile-detail-item {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.profile-detail-item strong {
+    margin-right: 10px;
+    font-weight: 600;
+    min-width: 120px;  /*  Increased width for clarity */
+    color: var(--light-text-secondary);
+}
+
+.theme-dark .profile-detail-item strong {
+    color: var(--dark-text-secondary);
+}
+
+.theme-light .profile-detail-item strong {
+    color: var(--light-text-secondary);
+}
+
+/*  Additional Information Styling */
+.profile-detail-item span {
+    font-size: 16px;
+    color: var(--light-text-primary);
+}
+
+.theme-dark .profile-detail-item span {
+    color: var(--dark-text-primary);
+}
+
+.theme-light .profile-detail-item span {
+    color: var(--light-text-primary);
+}
+
+
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .profile-container {
+        width: 95%;
+        padding: 16px;
+    }
+
+    .profile-header {
+        flex-direction: column; /* Stack the title and back button */
+        align-items: flex-start;
+    }
+
+    .profile-title {
+        margin-left: 0;
+        margin-top: 10px;
+        font-size: 24px;
+    }
+
+    .profile-tabs {
+        flex-direction: column;
+    }
+
+    .profile-tab {
+        padding: 10px;
+        text-align: center;
+        border-bottom: none !important; /* remove bottom border */
+    }
+
+    .profile-tab.active {
+        border-left: 4px solid var(--light-accent-primary) !important; /* add left border */
+        border-bottom: none !important; /* remove bottom border */
+    }
+
+    .theme-dark .profile-tab.active {
+        border-left: 4px solid var(--dark-accent-primary) !important; /* add left border */
+        border-bottom: none !important; /* remove bottom border */
+    }
+
+    .theme-light .profile-tab.active {
+        border-left: 4px solid var(--light-accent-primary) !important; /* add left border */
+        border-bottom: none !important; /* remove bottom border */
+    }
+
+    .profile-detail-item {
+        flex-direction: column; /* Stack labels and values */
+        align-items: flex-start; /* Align to the start */
+    }
+
+    .profile-detail-item strong {
+        min-width: auto; /* Remove fixed width */
+        margin-bottom: 5px; /* Add spacing */
+    }
+}

@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration</title>
+    <link rel="stylesheet" href="{% static 'student_form.css' %}">
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" 
+          integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" 
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Optional: Bootstrap Icons (if needed) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'admin_styles.css' %}">
+
+    <!-- Apply Theme Before Page Load (Fixes FOUC) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <div class="d-flex flex-direction-column col-12 overflow-y-scroll">
+        {% if flag %}
+        <form method="post" action="{% url 'student_register' flag %}" class="col-12">
+        {% else %}
+        <form method="post" action="{% url 'student_register' 2 %}" class="col-12">
+        {% endif %}
+       
+            {% csrf_token %}
+            <h2>Student Registration {% if not details %}
+                form
+            {% else %}
+                details
+            {% endif %} </h2>
+            {% if form.errors %}
+                <div style="color: red;">
+                    Please correct the errors below:
+                </div>
+            {% endif %}
+            {{ form.as_p }}
+            
+            <!-- Determine if it's an update or a new registration -->
+            {% if not details %}
+                <button type="submit">
+                    {% if form.instance.pk and form.instance.user.first_name %}Update{% else %}Register{% endif %}
+                </button>
+            {% else %}
+            {% endif %}
+           {% if not details %}
+           <a class="btn btn-primary" href="{% url 'student' %}" >Back to Student</a>
+           {% else %}
+           <a class="btn btn-primary" href="{% url 'tutor' %}" >Back to Student</a>
+           {% endif %}
+            
+
+            {% if placement %}
+                <button type="button"  id="apply-btn" data-placement-id="{{ placement.offer_id }}">
+                    Apply
+                </button>
+                
+            {% endif %}
+
+        </form>
+    </div>
+    <script src="{% static 'student_form.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded',function (){
+            var button = document.getElementById("apply-btn")
+            button.addEventListener("click", function () {
+                let offerId = this.getAttribute("data-placement-id");
+                console.log("offerId",offerId)
+                fetch(`/apply-placement/${offerId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.applied) {
+                        button.style.backgroundColor = "green";
+                        button.innerText = "Applied";
+                        button.disabled = true
+                    } else {
+                        button.style.backgroundColor = "gray";
+                        button.innerText = "Apply";
+                    }
+                });
+            });
+        })
+       
+    </script>
+</body>
+</html>
