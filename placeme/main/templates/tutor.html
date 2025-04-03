@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,12 +12,194 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" 
           integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" 
           crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="{% static 'admin_styles.css' %}">  <!-- Reuse the same CSS -->
+    <link rel="stylesheet" href="{% static 'admin_styles.css' %}">
     <link rel="stylesheet" href="{% static 'profile_styles.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Optional: Bootstrap Icons (if needed) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .marks-table-container {
+            height: 50vh;
+            overflow-y: auto;
+        }
+    
+        .table th, .table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+    
+        .table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+    
+        .table th {
+            position: sticky;
+            top: 0;
+            background-color: #007bff;
+            color: white;
+        }
+    
+        .no-marks {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin-top: 20px;
+        }
+        .upload-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: max-content;
+        }
+        
+        .custom-file-button {
+            background: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .custom-file-button:hover {
+            background: #0056b3;
+        }
+        
+        #fileName {
+            font-size: 14px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .upload-button {
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .upload-button:hover {
+            background: #218838;
+        }
+        
+        .messages {
+            margin-top: 10px;
+            list-style: none;
+            padding: 0;
+        }
+        
+        .messages li {
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        
+        .messages .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .messages .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .table-container {
+            max-height: 50vh;
+            overflow-y: auto;
+            overflow-X:hidden;
+        }
+        .table thead {
+            position: sticky;
+            top: 0;
+            background-color: #343a40;
+            color: white;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            display: block;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background: #f1f1f1;
+        }
+        .floating-action-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .a{
+            max-height:fit-content;
+        }
+        
+        .table {
+            max-height: 300px;  /* Adjust this height to the desired size */
+            overflow-y: auto;   /* Makes the tbody scrollable */
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa; /* You can change this color to match your design */
+            z-index: 1;  /* Keeps the header on top */
+        }
+        
+        
+        
+    </style>
+    <script>
+        
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.classList.add(savedTheme === 'light' ? 'theme-light' : 'theme-dark');
+        })();
+    </script>
 </head>
 <body class="theme-dark">
     <div class="app-container">
+        <!-- Sidebar -->
         <aside class="app-sidebar" id="sidebar">
             <div class="sidebar-header">
                 <button class="sidebar-toggle" id="sidebarToggle">
@@ -32,19 +215,40 @@
                     <i class="material-icons">people</i>
                     <span class="nav-button-text">Students</span>
                 </button>
-                <button class="nav-button" id="navLogout">
-                    <i class="material-icons">power_settings_new</i>
-                    <span class="nav-button-text">Log Out</span>
+                <button class="nav-button" id="navNotification" data-page="notificationsPage">
+                    <i class="material-icons">notifications</i>
+                    <span class="nav-button-text">Notifications</span>
                 </button>
+                
+                <form id="logoutForm" action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button class="nav-button" type="submit">
+                        <i class="material-icons">power_settings_new</i>
+                        <span class="nav-button-text">Log Out</span>
+                    </button>
+                </form>  
             </nav>
         </aside>
+        <!-- Main Content -->
         <main class="app-main-content">
             <header class="app-header">
                 <div class="app-header-left">
                     <div class="user-profile">
-                        <div class="user-avatar" id="userAvatar">T</div>
+                        <div class="user-avatar" id="userAvatar">
+                            {% if user.first_name %}
+                                {{ user.first_name|slice:":1"|upper }}
+                            {% else %}
+                                T
+                            {% endif %}
+                        </div>
                         <div class="user-info">
-                            <div class="user-name" id="userName">Tutor Name</div>
+                            <div class="user-name" id="userName">
+                                {% if user.first_name or user.last_name %}
+                                    {{ user.first_name }} {{ user.last_name }}
+                                {% else %}
+                                    {{ user.email }}
+                                {% endif %}
+                            </div>
                             <div class="user-role" id="userRole">Tutor</div>
                         </div>
                     </div>
@@ -52,7 +256,9 @@
                 <div class="app-header-right">
                     <button class="app-header-button" id="viewProfileButton" data-page="profilePage">
                         <i class="material-icons">account_circle</i>
-                        <span>View Profile</span>
+                        <span>
+                            <a href="{% url 'tutor_form' %}">View Profile</a>
+                        </span>
                     </button>
                     <button class="app-header-button" id="themeToggle">
                         <i class="material-icons">brightness_4</i>
@@ -61,40 +267,188 @@
                 </div>
             </header>
             <div class="page-content">
-                <!-- Placements Page (Tutor - View Only) -->
-                <section id="placementsPage" class="page active-page">
+                <!-- Placements Page (Tutor) -->
+                <section id="placementsPage" class="page">
                     <h1 class="page-title">View Placements</h1>
-                    <ul class="placement-list" id="placementList">
-                        <!-- Placement items (read-only) -->
-                    </ul>
-                </section>
-                <!-- Students Page (Common) -->
-                <section id="studentsPage" class="page">
-                    <h1 class="page-title">Students</h1>
-                    <div class="page-actions">
-                        <div class="student-filters">
-                            <button class="filter-button" id="sortStudents">
-                                <i class="material-icons">sort</i>
-                                <span>Sort</span>
-                            </button>
-                            <button class="filter-button" id="filterStudents">
-                                <i class="material-icons">filter_list</i>
-                                <span>Filter</span>
-                            </button>
+                    <div class="container d-flex g-2 flex-wrap">
+                        {% for placement in placements %}
+                        <div class="col-md-3 m-2 " 
+                            data-status="{% if user in placement.applied_by.all %}applied{% elif user in placement.liked_by.all %}liked{% else %}available{% endif %}">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">{{ placement.company_name }}</h5>
+                                    <p class="card-text"><strong>CGPA Required:</strong> {{ placement.cgpa_required }}</p>
+                                    <p class="card-text"><strong>Allowed Backpapers:</strong> {{ placement.no_of_backpapers }}</p>
+                                    <p class="card-text"><strong>Salary:</strong> ₹{{ placement.salary }} per annum</p>
+                                    <p class="card-text"><strong>Skills Required:</strong> {{ placement.skillset|default:"N/A" }}</p>
+                                    <p class="card-text"><strong>Apply Before:</strong> {{ placement.final_date }}</p>
+                                </div>
+                            </div>
                         </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-info">No placement offers available at the moment.</div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                    
+                    
+                </section>
+                <!-- Students Page (For Tutor) -->
+                <section id="studentsPage" class="page active-page">
+                    <h1 class="page-title">My Students</h1>
+                    <div class="page-actions">
+
                         <div class="student-actions">
-                            <button class="app-button" id="exportStudentsBtn">
-                                <i class="material-icons">file_download</i>
-                                <span>Export</span>
-                            </button>
-                            <button class="app-button" id="uploadGradeSheetBtn">
-                                <i class="material-icons">file_upload</i>
-                                <span>Upload Grades</span>
-                            </button>
+                            <form method="POST" enctype="multipart/form-data" action="{% url 'tutor_dashboard' %}" id="uploadForm">
+                                {% csrf_token %}
+                                <div class="upload-container">
+                                    <label for="fileInput" class="custom-file-button">
+                                        <i class="material-icons">attach_file</i> Choose File
+                                    </label>
+                                    <span id="fileName">No file chosen</span>
+                                    <input type="file" id="fileInput" name="csv_file" accept=".csv" required hidden>
+                            
+                                    <button type="submit" class="upload-button">
+                                        <i class="material-icons">file_upload</i> Upload Grades
+                                    </button>
+                                </div>
+                            </form>                           
+                            <a href="{% url 'export_marks_csv' %}" class="btn btn-success">
+                                <i class="material-icons">file_download</i> Export Marks
+                            </a>
+                            
                         </div>
                     </div>
+                    
                     <ul class="student-list" id="studentList">
-                        <!-- Student items (read-only) -->
+                        <div class="container mt-4">
+                           
+                            {% if students %}
+                                
+                                <div class="container">
+                                    <h2 class="mb-3">Student Details</h2>
+                                    <form method="GET" class="mb-3">
+                                        <div class="row g-2">
+                                            <div class="col-md-4">
+                                                <input type="text" class="form-control" name="student_filter" 
+                                                       value="{{ student_filter }}" placeholder="Search student by name or reg. no.">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <select class="form-select" name="student_sort">
+                                                    <option value="">Sort by...</option>
+                                                    <option value="name" {% if student_sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                                                    <option value="-name" {% if student_sort == '-name' %}selected{% endif %}>Name (Z-A)</option>
+                                                    <option value="regno" {% if student_sort == 'regno' %}selected{% endif %}>Registration No. (Asc)</option>
+                                                    <option value="-regno" {% if student_sort == '-regno' %}selected{% endif %}>Registration No. (Desc)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <button type="submit" class="btn btn-outline-primary">Apply Filters</button>
+                                                <a href="{% url 'tutor_dashboard' %}" class="btn btn-outline-secondary">Clear</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Reg No</th>
+                                                <th>Name</th>
+                                                <th>Phone</th>
+                                                <th>Semester</th>
+                                                <th>Date of Birth</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student in students %}
+                                                <tr>
+                                                    <td>
+                                                        <a href="{% url 'student_update' student.reg_no %}" class="student-link">
+                                                            {{ student.reg_no }}
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'student_detail' student.reg_no %}" class="student-link">
+                                                            {{ student.user.first_name }} {{ student.user.last_name }}
+                                                        </a>
+                                                    </td>
+                                                    <td>{{ student.phone_no|default:"N/A" }}</td>
+                                                    <td>{{ student.semester }}</td>
+                                                    <td>{{ student.date_of_birth|default:"N/A" }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                    
+                                
+                                <div>
+                                    <h2 class="mt-5 mb-3">Student Marks</h2>
+                                    <form method="GET" class="mb-3">
+                                        <div class="row g-2">
+                                            <div class="col-md-4">
+                                                <input type="text" class="form-control" name="student_filter" 
+                                                       value="{{ student_filter }}" placeholder="Search student by name or reg. no.">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <select class="form-select" name="student_sort">
+                                                    <option value="">Sort by...</option>
+                                                    <option value="name" {% if student_sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                                                    <option value="-name" {% if student_sort == '-name' %}selected{% endif %}>Name (Z-A)</option>
+                                                    <option value="regno" {% if student_sort == 'regno' %}selected{% endif %}>Registration No. (Asc)</option>
+                                                    <option value="-regno" {% if student_sort == '-regno' %}selected{% endif %}>Registration No. (Desc)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <button type="submit" class="btn btn-outline-primary">Apply Filters</button>
+                                                <a href="{% url 'tutor_dashboard' %}" class="btn btn-outline-secondary">Clear</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    
+                                    <table class="table table-striped table-hover overflow-y-scroll">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Semester</th>
+                                                <th>CGPA</th>
+                                                <th>Backlogs</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student in students %}
+                                                {% with marks_dict|get_item:student.reg_no as student_marks %}
+                                                    {% if student_marks %}
+                                                        {% for mark in student_marks %}
+                                                            <tr>
+                                                                <td>
+                                                                    <a href="{% url 'student_detail' student.reg_no %}">
+                                                                        {{ student.user.first_name }} {{ student.user.last_name }}
+                                                                    </a>
+                                                                </td>
+                                                                <td>{{ mark.sem }}</td>
+                                                                <td>{{ mark.cgpa }}</td>
+                                                                <td>{{ mark.backlog }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <tr>
+                                                            <td colspan="4" class="text-center">No marks available for {{ student.user.first_name }}</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No students found.</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="alert alert-warning">No students have registered with you.</p>
+                            {% endif %}
+                        </div>
                     </ul>
                 </section>
                 <!-- Tutor Profile Page -->
@@ -108,50 +462,231 @@
                         </div>
                         <div class="profile-details">
                             <div class="profile-detail-item">
-                                <strong>Name:</strong> <span id="profileName"></span>
+                                <strong>Name:</strong> <span id="profileName">
+                                    {% if user.first_name or user.last_name %}
+                                        {{ user.first_name }} {{ user.last_name }}
+                                    {% else %}
+                                        {{ user.email }}
+                                    {% endif %}
+                                </span>
                             </div>
                             <div class="profile-detail-item">
-                                <strong>Email:</strong> <span id="profileEmail"></span>
+                                <strong>Email:</strong> <span id="profileEmail">{{ user.email }}</span>
                             </div>
                             <!-- Tutor-Specific Details -->
                             <div id="tutorDetails">
                                 <div class="profile-detail-item">
-                                    <strong>Semester:</strong> <span id="profileSemester"></span>
+                                    <strong>Semester:</strong> <span id="profileSemester">
+                                        {% if user.semester %}{{ user.semester }}{% else %}N/A{% endif %}
+                                    </span>
                                 </div>
                                 <div class="profile-detail-item">
-                                    <strong>Division:</strong> <span id="profileDivision"></span>
+                                    <strong>Division:</strong> <span id="profileDivision">
+                                        {% if user.division %}{{ user.division }}{% else %}N/A{% endif %}
+                                    </span>
                                 </div>
                                 <div class="profile-detail-item">
-                                    <strong>No. of Students:</strong> <span id="profileNumStudents"></span>
+                                    <strong>No. of Students:</strong> <span id="profileNumStudents">
+                                        {% if user.num_students %}{{ user.num_students }}{% else %}N/A{% endif %}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
+                <section id="notificationsPage" class="page">
+                    <div class="container mt-3">
+                        <h4 class="mb-3">Notifications</h4>
+                        <div class="list-group">
+                            {% for approvals in tutor_approvals %}
+                                {% for approval in approvals %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center 
+                                            {% if not approval.confirm %} bg-light {% endif %}">
+                                    <div>
+                                        <strong>{{ approval.nid.sender.username }}</strong> sent a request:
+                                        <p class="mb-1">{{ approval.nid.message }}</p>
+                                        <small class="text-muted">{{ approval.nid.date }}</small>
+                                    </div>
+                                    <div>
+                                        {% if approval.confirm %}
+                                            <button class="btn btn-success btn-sm" disabled>Confirmed</button>
+                                        {% else %}
+                                            <a href="{% url 'confirm_approval' approval.tid %}" class="btn btn-primary btn-sm confirm-btn">
+                                                Confirm
+                                            </a>                                        
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                </section>
             </div>
+            {% if messages %}
+                <div id="toast-container">
+                    {% for message in messages %}
+                        <div class="toast-message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <style>
+                #toast-container {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 1000;
+                }
+
+                .toast-message {
+                    background: #333;
+                    color: white;
+                    padding: 10px 15px;
+                    margin-bottom: 10px;
+                    border-radius: 5px;
+                    opacity: 1;
+                    transition: opacity 0.5s ease-in-out;
+                }
+            </style>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    console.log("DOM Loaded");
+                    document.getElementById("fileInput").addEventListener("change", function () {
+                        var fileNameSpan = document.getElementById("fileName");
+                        if (this.files.length > 0) {
+                            fileNameSpan.textContent = this.files[0].name;
+                            fileNameSpan.style.color = "#000"; // Make text more visible
+                        } else {
+                            fileNameSpan.textContent = "No file chosen";
+                            fileNameSpan.style.color = "#777"; // Default grey color
+                        }
+                    });
+            
+                    // Theme Toggle
+                    const themeToggle = document.getElementById('themeToggle');
+                    if (themeToggle) {
+                        const savedTheme = localStorage.getItem('theme') || 'dark';
+                        document.body.classList.add(savedTheme === 'light' ? 'theme-light' : 'theme-dark');
+            
+                        themeToggle.addEventListener('click', () => {
+                            document.body.classList.toggle('theme-dark');
+                            document.body.classList.toggle('theme-light');
+                            localStorage.setItem('theme', document.body.classList.contains('theme-light') ? 'light' : 'dark');
+                        });
+                    }
+            
+                    // Toast Message Auto-hide
+                    document.querySelectorAll(".toast-message").forEach((toast, index) => {
+                        setTimeout(() => {
+                            toast.style.opacity = "0";
+                            setTimeout(() => toast.remove(), 500);
+                        }, 5000 + index * 100);
+                    });
+            
+                    // Sidebar Navigation
+                    const navButtons = document.querySelectorAll(".nav-button");
+                    const pages = document.querySelectorAll(".page");
+            
+                    navButtons.forEach(button => {
+                        button.addEventListener("click", function () {
+                            const targetPageId = this.getAttribute("data-page");
+                            pages.forEach(page => page.classList.remove("active-page"));
+                            document.getElementById(targetPageId).classList.add("active-page");
+            
+                            navButtons.forEach(btn => btn.classList.remove("active"));
+                            this.classList.add("active");
+                        });
+                    });
+            
+                    // Sort & Filter Dropdowns
+                    function setupDropdown(triggerId, dropdownId) {
+                        const trigger = document.getElementById(triggerId);
+                        const dropdown = document.getElementById(dropdownId);
+            
+                        if (trigger && dropdown) {
+                            trigger.addEventListener("click", function () {
+                                dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+                            });
+            
+                            document.addEventListener("click", function (event) {
+                                if (!trigger.contains(event.target) && !dropdown.contains(event.target)) {
+                                    dropdown.style.display = "none";
+                                }
+                            });
+                        }
+                    }
+            
+                    setupDropdown("sortStudents", "sortDropdown");
+                    setupDropdown("filterStudents", "filterDropdown");
+                    const sortButtons = document.querySelectorAll("#sortDropdown .dropdown-item");
+                    const filterButtons = document.querySelectorAll("#filterDropdown .dropdown-item");
+                
+                    // Get current URL params
+                    const urlParams = new URLSearchParams(window.location.search);
+                
+                    // Handle sorting
+                    sortButtons.forEach(button => {
+                        button.addEventListener("click", function () {
+                            const sortValue = this.getAttribute("data-sort");
+                
+                            // Update URL parameters
+                            urlParams.set("sort", sortValue);
+                            window.location.search = urlParams.toString();
+                        });
+                    });
+                
+                    // Handle filtering
+                    filterButtons.forEach(button => {
+                        button.addEventListener("click", function () {
+                            const filterValue = this.getAttribute("data-filter").replace("semester_", "");
+                
+                            // Update URL parameters
+                            urlParams.set("sem", filterValue);
+                            window.location.search = urlParams.toString();
+                        });
+                    });
+                
+                    // Toggle dropdowns
+                    document.getElementById("sortStudents").addEventListener("click", function () {
+                        document.getElementById("sortDropdown").classList.toggle("show");
+                    });
+                
+                    document.getElementById("filterStudents").addEventListener("click", function () {
+                        document.getElementById("filterDropdown").classList.toggle("show");
+                    });
+                
+                    // Close dropdowns if clicked outside
+                    document.addEventListener("click", function (event) {
+                        if (!event.target.closest(".student-filters")) {
+                            document.getElementById("sortDropdown").classList.remove("show");
+                            document.getElementById("filterDropdown").classList.remove("show");
+                        }
+                    });
+                    const clearFilterButton = document.getElementById("clearFilter");
+                    filterButtons.forEach(button => {
+                        button.addEventListener("click", function () {
+                            const filterValue = this.getAttribute("data-filter").replace("semester_", "");
+                
+                            // Update URL parameters
+                            if (filterValue) {
+                                urlParams.set("sem", filterValue);
+                            }
+                            window.location.search = urlParams.toString();
+                        });
+                    });
+                
+                    // Handle clearing the filter
+                    clearFilterButton.addEventListener("click", function () {
+                        urlParams.delete("sem");  // Remove semester filter
+                        window.location.search = urlParams.toString();
+                    });
+                });
+            </script>                     
         </main>
     </div>
     <script type="module" src="{% static 'tutor_script.js' %}"></script>
     <script src="{% static 'common.js' %}"></script>
-    <div id="editStudentModal" class="app-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Edit Student</h2>
-                <button class="modal-close" onclick="closeEditStudentModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <label for="studentName">Name:</label>
-                <input type="text" id="studentName" name="studentName">
-    
-                <label for="studentRollNo">Roll No:</label>
-                <input type="text" id="studentRollNo" name="studentRollNo">
-    
-            </div>
-            <div class="modal-footer">
-                <button class="modal-save">Save</button>
-                <button class="modal-cancel">Cancel</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

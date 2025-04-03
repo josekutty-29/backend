@@ -5,15 +5,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Placement Student Dashboard</title>
+    
+    <!-- Fonts & Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" 
           integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" 
           crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Optional: Bootstrap Icons (if needed) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'admin_styles.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Apply Theme Before Page Load (Fixes FOUC) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.classList.add(savedTheme === 'light' ? 'theme-light' : 'theme-dark');
+        })();
+    </script>
+    <style>
+        ul {
+            list-style-type: none; /* Removes the bullet points */
+            padding: 0; /* Removes default padding */
+            margin: 0; /* Removes default margin */
+        } 
+        .placement-card {
+            max-width: 290px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .placement-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
+        }
+        .placement-card .card {
+            height: 100%;
+            border-radius: 12px;
+        }
+        .placement-card .card-body {
+            padding: 1.25rem;
+        }
+        .placement-card .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        .placement-card .card-text {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #596775;
+        }
+        .placement-card .card-text strong {
+            color: #34495e;
+        }
+        .placement-card .btn {
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
+        }
+        .placement-card .like-btn {
+            padding: 0.5rem;
+            margin-left: 0.5rem;
+        }
+        .placement-card .like-btn:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
-<body class="theme-dark">
+<body>
     <div class="app-container">
         <aside class="app-sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -30,10 +96,13 @@
                     <i class="material-icons">notifications</i>
                     <span class="nav-button-text">Notifications</span>
                 </button>
-                <button class="nav-button" id="navLogout">
-                    <i class="material-icons">power_settings_new</i>
-                    <span class="nav-button-text">Log Out</span>
-                </button>
+                <form id="logoutForm" action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button class="nav-button" type="submit">
+                        <i class="material-icons">power_settings_new</i>
+                        <span class="nav-button-text">Log Out</span>
+                    </button>
+                </form>                
             </nav>
         </aside>
 
@@ -63,7 +132,7 @@
                 <div class="app-header-right">
                     <button class="app-header-button" id="viewProfileButton" data-page="profilePage">
                         <i class="material-icons">account_circle</i>
-                        <span>View Profile</span>
+                        <span><a href="{% url 'student_register' 2 %}">View Profile</a></span>
                     </button>
                     <button class="app-header-button" id="themeToggle">
                         <i class="material-icons">brightness_4</i>
@@ -73,24 +142,107 @@
             </header>
 
             <div class="page-content">
-                <!-- Placements Page (Student - View Only) -->
+                <!-- Placements Page -->
                 <section id="placementsPage" class="page active-page">
                     <h1 class="page-title">Available Placements</h1>
+                
                     <div class="filter-buttons">
                         <button class="app-button filter-button active" data-filter="available">Available</button>
                         <button class="app-button filter-button" data-filter="liked">Liked</button>
                         <button class="app-button filter-button" data-filter="applied">Applied</button>
                     </div>
-                    <ul class="placement-list" id="placementList">
-                        <!-- Placement items will be rendered by JS -->
-                    </ul>
+                
+                    <div class="col-12 page d-flex flex-row flex-wrap gap-3 justify-content-start active-page" id="placementContainer">
+                        {% for placement in placements %}
+                            <div class="placement-card" 
+                                data-status="{% if user in placement.applied_by.all %}applied{% elif user in placement.liked_by.all %}liked{% else %}available{% endif %}">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ placement.company_name }}</h5>
+                                        <p class="card-text"><strong>CGPA Required:</strong> {{ placement.cgpa_required }}</p>
+                                        <p class="card-text"><strong>Allowed Backpapers:</strong> {{ placement.no_of_backpapers }}</p>
+                                        <p class="card-text"><strong>Salary:</strong> ₹{{ placement.salary }} per annum</p>
+                                        <p class="card-text"><strong>Skills Required:</strong> {{ placement.skillset|default:"N/A" }}</p>
+                                        <p class="card-text"><strong>Apply Before:</strong> {{ placement.final_date }}</p>
+
+                                        <div class="d-flex align-items-center mt-3">
+                                            {% if user in placement.applied_by.all %}
+                                                <button class="btn apply-btn" data-placement-id="{{ placement.offer_id }}"
+                                                    style="background-color: green; color: white;">
+                                                    Applied
+                                                </button>
+                                            {% else %}
+                                                <a class="btn apply-btn" href="/student_apply_register/{{placement.offer_id}}/"
+                                                    style="background-color: gray; color: white;">
+                                                    Apply
+                                                </a>
+                                            {% endif %}
+
+                                            <button class="btn btn-light like-btn" data-placement-id="{{ placement.offer_id }}">
+                                                {% if user in placement.liked_by.all %}
+                                                    <i class="fa-solid fa-heart text-danger"></i>
+                                                {% else %}
+                                                    <i class="fa-regular fa-heart"></i>
+                                                {% endif %}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info">No placement offers available at the moment.</div>
+                            </div>
+                            {% if messages %}
+                            <ul>
+                                {% for message in messages %}
+                                    {% if message.tags == "warning" %}
+                                        <li>
+                                            <div class="col-12">
+                                                <div class="alert alert-info">{{ message }}</div>
+                                            </div>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        
+                        {% endfor %}
+                    </div>
                 </section>
 
-                <!-- Notifications Page (Student) -->
+                <!-- Notifications Page -->
                 <section id="notificationsPage" class="page">
-                    <h1 class="page-title">Notifications</h1>
+                    
                     <ul class="notification-list" id="notificationList">
-                        <!-- Notification items will be rendered by JS -->
+                        {% if notifications %}
+                        <div class="container mt-3">
+                            <h2 class="mb-3">Notifications</h2>
+                            <div class="list-group">
+                                {% for notification in notifications %}
+                                    
+                                    <div class="list-group-item d-flex justify-content-between align-items-center m-1
+                                                {% if not approval.confirm %} bg-light {% endif %}">
+                                        <div>
+                                            <h5><strong>{{ notification.nid.sender.username }}</strong> sent a message:</h5>
+                                            <p class="mb-1">{{ notification.nid.message }}{% if notification.placement.company_name %}
+                                                 at <strong>{{notification.placement.company_name}}</strong>                                        
+                                            {% endif %}</p>
+                                            
+                                        </div>
+                                        <div>
+                                            
+                                            <small class="text-muted">{{ notification.nid.date }}</small>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">No notifications for you.</div>
+                        </div>
+                        {% endif %}
                     </ul>
                 </section>
 
@@ -120,7 +272,7 @@
                     </div>
                 </section>
 
-                <!-- Details Page (Initially Hidden) -->
+                <!-- Details Page -->
                 <section id="detailsPage" class="page">
                     <h2 id="detailsPageTitle"></h2>
                     <p id="detailsDescription"></p>
@@ -132,7 +284,139 @@
         </main>
     </div>
 
-    <script type="module" src="{% static 'student_script.js' %}"></script>   
-     <script src="{% static 'common.js' %}"></script> 
+    <!-- Scripts -->
+    <!-- <script type="module" src="{% static 'student_script.js' %}"></script>
+    <script type="module" src="{% static 'common.js' %}"></script> -->
+
+    <!-- Setup Theme Toggle -->
+    <script>
+        function setupThemeToggle() {
+            console.log("Theme toggle called");
+            const themeToggle = document.getElementById('themeToggle');
+
+            if (themeToggle) {
+                const savedTheme = localStorage.getItem('theme');
+
+                if (savedTheme === 'light') {
+                    document.body.classList.remove('theme-dark');
+                    document.body.classList.add('theme-light');
+                } else {
+                    document.body.classList.add('theme-dark');
+                    document.body.classList.remove('theme-light');
+                    localStorage.setItem('theme', 'dark');
+                }
+
+                themeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('theme-dark');
+                    document.body.classList.toggle('theme-light');
+                    localStorage.setItem('theme', document.body.classList.contains('theme-light') ? 'light' : 'dark');
+                });
+                }
+            }
+            document.addEventListener("DOMContentLoaded", function () {
+                const navButtons = document.querySelectorAll('.nav-button');
+                const pages = document.querySelectorAll('.page');
+            
+                navButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const targetPage = this.getAttribute('data-page');
+                        
+                        // Remove active class from all buttons
+                        navButtons.forEach(btn => btn.classList.remove('active'));
+                        
+                        // Add active class to clicked button
+                        this.classList.add('active');
+                        
+                        // Remove active-page class from all pages
+                        pages.forEach(page => page.classList.remove('active-page'));
+                        
+                        // Add active-page class to the target page
+                        document.getElementById(targetPage).classList.add('active-page');
+                    });
+                });
+                document.querySelectorAll(".like-btn").forEach(button => {
+                    button.addEventListener("click", function () {
+                        let offerId = this.getAttribute("data-placement-id");
+                        let likeIcon = this.querySelector("i");
+
+                        fetch(`/like-placement/${offerId}/`, {
+                            method: "POST",
+                            headers: {
+                                "X-CSRFToken": "{{ csrf_token }}",
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({})
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.liked) {
+                                likeIcon.classList.remove("fa-regular");
+                                likeIcon.classList.add("fa-solid", "text-danger");
+                            } else {
+                                likeIcon.classList.remove("fa-solid", "text-danger");
+                                likeIcon.classList.add("fa-regular");
+                            }
+                        });
+                    });
+                    
+                });
+                document.querySelectorAll("button.apply-btn").forEach(button => {
+                    button.addEventListener('click',function (){
+                        let con = confirm("You want to remove from the applied")
+                        if(!con) 
+                            return 
+
+                        let offerId = this.getAttribute("data-placement-id");
+                        console.log("offerId",offerId)
+                        fetch(`/apply-placement/${offerId}/`, {
+                            method: "POST",
+                            headers: {
+                                "X-CSRFToken": "{{ csrf_token }}",
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({})
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.applied) {
+                                button.style.backgroundColor = "green";
+                                button.innerText = "Applied";
+                                
+                            } else {
+                                button.style.backgroundColor = "gray";
+                                button.innerText = "Apply";
+                                location.reload(true);
+                            }
+                        });
+                    })
+                })
+                
+                const filterButtons = document.querySelectorAll(".filter-button");
+                const placementCards = document.querySelectorAll(".placement-card");
+
+                filterButtons.forEach(button => {
+                    button.addEventListener("click", function () {
+                        let filter = this.getAttribute("data-filter");
+
+                        // Remove active class from all buttons and add to clicked button
+                        filterButtons.forEach(btn => btn.classList.remove("active"));
+                        this.classList.add("active");
+
+                        // Show/Hide Placements based on filter
+                        placementCards.forEach(card => {
+                            if (filter === "available") {
+                                card.style.display = "block";  // Show all placements
+                            } else if (card.getAttribute("data-status") === filter) {
+                                card.style.display = "block";  // Show only filtered category
+                            } else {
+                                card.style.display = "none";   // Hide others
+                            }
+                        });
+                    });
+                });
+            });
+
+        setupThemeToggle();
+    </script>
 </body>
 </html>

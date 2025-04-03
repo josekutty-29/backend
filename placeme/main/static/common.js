@@ -16,29 +16,6 @@ export const notifications = [
     { id: 3, title: "Application Status Update" }
 ];
 
-
-
-// --- Theme Toggle ---
-export function setupThemeToggle() {
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') {
-            document.body.classList.remove('theme-dark');
-            document.body.classList.add('theme-light');
-        } else {
-            document.body.classList.add('theme-dark');
-            document.body.classList.remove('theme-light');
-            localStorage.setItem('theme', 'dark');
-        }
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('theme-dark');
-            document.body.classList.toggle('theme-light');
-            localStorage.setItem('theme', document.body.classList.contains('theme-light') ? 'light' : 'dark');
-        });
-    }
-}
-
 // --- Sidebar Toggle ---
 export function setupSidebarToggle() {
     const sidebarToggle = document.getElementById('sidebarToggle');
@@ -79,25 +56,38 @@ export function setupNavigation() {
 }
 
 export function activatePage(pageId) {
+    if (!pageId) return; // Prevent errors if pageId is undefined or null
+
+    // Deactivate all pages
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active-page');
     });
+
+    // Activate the target page if it exists
     const page = document.getElementById(pageId);
     if (page) {
         page.classList.add('active-page');
     }
+
+    // Deactivate all navigation buttons
     document.querySelectorAll('.nav-button').forEach(button => {
         button.classList.remove('active');
     });
+
+    // Activate the corresponding navigation button
     const activeButton = document.querySelector(`.nav-button[data-page="${pageId}"]`);
     if (activeButton) {
         activeButton.classList.add('active');
     }
+
+    // Toggle header visibility based on the active page
     const appHeader = document.querySelector('.app-header');
-    if (pageId === 'profilePage') {
-        if (appHeader) appHeader.classList.add('header-hidden');
-    } else {
-        if (appHeader) appHeader.classList.remove('header-hidden');
+    if (appHeader) {
+        if (pageId === 'profilePage') {
+            appHeader.classList.add('header-hidden');
+        } else {
+            appHeader.classList.remove('header-hidden');
+        }
     }
 }
 

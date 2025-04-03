@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-0-l81!yu-0)4-icsq9@n5d1$bl76jr1mc4s15wl1d@uiak44_m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'placeme.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'placeme',  # Your MySQL database name
+        'NAME': 'placeme8',  # Your MySQL database name
         'USER': 'root',
         'PASSWORD': 'W7301@jqir#',
         'HOST': 'localhost',  # Use the MySQL server address
@@ -105,6 +105,13 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Use your email provider
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = '' #gmail id
+EMAIL_HOST_PASSWORD = ''  # Use App Password if using Gmail
 
 
 # Internationalization

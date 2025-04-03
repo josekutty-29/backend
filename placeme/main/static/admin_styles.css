@@ -1,5 +1,21 @@
 /* css/admin_styles.css (or student_styles.css - whichever you're using) */
+:root {
+    --background-color-dark: #121212;
+    --text-color-dark: #ffffff;
+    --background-color-light: #ffffff;
+    --text-color-light: #000000;
+}
 
+body {
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+}
+
+/* Light Theme */
+body.theme-light {
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
+}
 /* --- Variables (Dark & Light) --- */
 :root {
     /* Dark Theme Variables */
@@ -70,6 +86,10 @@
 .filter-button.active {
     background-color: #007bff;
     color: white;
+
+}
+.placement-card{
+    max-width: 150px;
 }
 
 .placement-actions {
@@ -1311,13 +1331,4 @@ body.theme-light {
         padding: 4px 8px;
         font-size: 12px;
     }
-}
-.placement-list .placement-list-item.registered {
-    background-color: #add8e6; /* Light blue */
-    color: black; /*ensures text is readable against light blue*/
-}
-
-.theme-dark .placement-list .placement-list-item.registered {
-    background-color: #2962ff; /* Darker blue in dark mode */
-    color: white; /*ensures text is readable against dark blue*/
 }

@@ -5,7 +5,8 @@ import {
     activatePage,
     placements,
     notifications,
-    showPlacementDetails
+    showPlacementDetails,
+    
 } from './common.js';
 
 // --- DOM Element References ---
@@ -100,6 +101,7 @@ function renderNotifications() {
 // --- Initialization ---
 // IMPORTANT: Do not change header content here—let the Django template render it.
 function initStudent() {
+    console.log("student script js called")
     setupThemeToggle();
     setupSidebarToggle();
     setupNavigation();
@@ -123,11 +125,27 @@ function setupFilterButtons() {
         });
     });
 }
+document.getElementById('navLogout').addEventListener('click', function() {
+    fetch('/logout/', {
+        method: 'GET',  // Use GET since it works manually
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (response.redirected) {
+            sessionStorage.clear();  // Clears frontend session storage
+            window.location.href = response.url; // Redirect to login page
+        } else {
+            console.error('Logout failed: No redirection');
+        }
+    })
+    .catch(error => console.error('Logout error:', error));
+});
+
 
 function setupDetailsBackButton() {
     if (detailsBackButton) {
         detailsBackButton.addEventListener('click', () => {
-            activatePage('placementsPage');
+           activatePage('placementsPage');
         });
     }
 }
